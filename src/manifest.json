@@ -1,0 +1,44 @@
+{
+  "name": "chrome-extension-vue-vuetify",
+  "description": "A template for a Chrome extension using Vuejs and Vuetify",
+  "version": null,
+  "manifest_version": 2,
+  "icons": {
+    "16": "icons/icon_16.png",
+    "32": "icons/icon_32.png",
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
+  },
+  "browser_action": {
+    "default_title": "Popup Title",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon_16.png",
+      "32": "icons/icon_32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "chrome_style": false
+  },
+  "background": {
+    "scripts": [
+      "background/background.js"
+    ]
+  },
+  "permissions": [
+    "storage",
+    "http://localhost/test-content-script/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/test-content-script/*"
+      ],
+      "js": [
+        "content/site1.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
