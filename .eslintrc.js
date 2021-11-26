@@ -5,8 +5,8 @@ module.exports = {
   root: true,
   parserOptions: {
     sourceType: 'module',
-    ecmaVersion: 2015,
-    parser: 'babel-eslint'
+    ecmaVersion: 'latest',
+    parser: '@babel/eslint-parser'
   },
   env: {
     browser: true,
@@ -15,12 +15,10 @@ module.exports = {
   },
   extends: [
     'prettier',
-    'prettier/vue',
     'plugin:vue/recommended',
     'plugin:prettier/recommended'
   ],
   plugins: ['prettier'],
-
   rules: {
     'vue/max-attributes-per-line': 'off'
   }

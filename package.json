@@ -1,21 +1,23 @@
 {
   "name": "chrome-extension-vue-vuetify",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Template for creating chrome extensions using vue + vuetify",
   "author": "talal424",
   "license": "MIT",
   "engines": {
-    "node": ">=10"
+    "node": ">=12.22.0"
   },
   "scripts": {
+    "build": "run-s lint build:prod",
+    "build:prod": "webpack --mode=production",
+    "build:dev": "webpack --mode=development",
+    "build:zip": "run-s build zip",
+    "watch:prod": "npm run build:prod -- --watch",
+    "watch:dev": "npm run build:dev -- --watch",
+    "dev": "npm run watch:dev",
+    "zip": "node scripts/build-zip.js",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore src",
-    "lint:fix": "eslint --fix --ext .js,.vue --ignore-path .gitignore src",
-    "prettier": "prettier \"src/**/*.{js,vue}\"",
-    "prettier:write": "npm run prettier -- --write",
-    "build": "cross-env NODE_ENV=production webpack --hide-modules",
-    "build:dev": "cross-env NODE_ENV=development webpack --hide-modules",
-    "build:zip": "npm run build & node scripts/build-zip.js",
-    "dev": "npm run build:dev -- --watch"
+    "lint:fix": "eslint --fix --ext .js,.vue --ignore-path .gitignore src"
   },
   "homepage": "https://github.com/talal424/chrome-extension-vue-vuetify",
   "bugs": {
@@ -33,48 +35,36 @@
     "extension"
   ],
   "browserslist": [
-    "last 2 Chrome versions"
+    "last 5 chrome major versions",
+    "last 5 ff major versions"
   ],
   "dependencies": {
-    "vue": "^2.6.10",
-    "vuetify": "^2.4.3"
+    "vue": "^2.6.14",
+    "vuetify": "^2.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/runtime-corejs3": "^7.4.0",
-    "@mdi/js": "^5.9.55",
-    "archiver": "^5.2.0",
-    "babel-eslint": "^10.1.0",
-    "babel-loader": "^8.0.2",
-    "copy-webpack-plugin": "^5.1.1",
-    "core-js": "^3.0.1",
-    "cross-env": "^5.2.0",
-    "css-loader": "^3.4.0",
+    "@babel/eslint-parser": "^7.16.3",
+    "@babel/preset-env": "^7.16.4",
+    "@mdi/js": "^6.5.95",
+    "archiver": "^5.3.0",
+    "babel-loader": "^8.2.3",
+    "copy-webpack-plugin": "^10.0.0",
+    "css-loader": "^6.5.1",
     "deepmerge": "^4.2.2",
-    "eslint": "^7.2.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-friendly-formatter": "^4.0.1",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-vue": "^6.0.1",
-    "eslint-webpack-plugin": "^2.4.3",
-    "file-loader": "^5.0.2",
-    "html-webpack-plugin": "^4.5.2",
-    "mini-css-extract-plugin": "^0.9.0",
-    "node-sass": "^4.9.3",
-    "postcss-loader": "^3.0.0",
-    "prettier": "^2.0.5",
-    "sass": "^1.32.5",
-    "sass-loader": "^8.0.2",
-    "vue-loader": "^15.4.2",
-    "vue-template-compiler": "^2.6.10",
-    "vuetify-loader": "^1.6.0",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.3.10"
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-vue": "^8.1.1",
+    "eslint-webpack-plugin": "^3.1.1",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.4.5",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.5.0",
+    "sass": "~1.32",
+    "sass-loader": "^12.3.0",
+    "vue-loader": "^15.9.8",
+    "vuetify-loader": "^1.7.3",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1"
   }
 }

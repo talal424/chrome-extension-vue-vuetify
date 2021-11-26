@@ -8,7 +8,6 @@ const ESLintPlugin = require('eslint-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  mode: process.env.NODE_ENV,
   context: __dirname + '/src',
   entry: {
     'content/site1': './content/site1.js',
@@ -68,7 +67,7 @@ module.exports = {
             loader: 'sass-loader',
             options: {
               sourceMap: false,
-              prependData: "@import '@/assets/variables.scss';"
+              additionalData: "@import '@/assets/variables.scss';"
             }
           }
         ]
@@ -83,7 +82,7 @@ module.exports = {
             options: {
               implementation: require('sass'),
               sourceMap: false,
-              prependData: "@import '@/assets/variables.scss'",
+              additionalData: "@import '@/assets/variables.scss'",
               sassOptions: {
                 indentedSyntax: true // optional
               }
@@ -93,22 +92,16 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: '/images/',
-          emitFile: true,
-          esModule: false
+        type: 'asset',
+        generator: {
+          filename: 'images/[name].[ext]'
         }
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]',
-          outputPath: '/fonts/',
-          emitFile: true,
-          esModule: false
+        type: 'asset',
+        generator: {
+          filename: 'fonts/[name].[ext]'
         }
       }
     ]
@@ -139,23 +132,29 @@ module.exports = {
       template: 'options/options.html',
       chunks: ['options/options']
     }),
-    new CopyPlugin([
-      { from: 'icons', to: 'icons', ignore: ['logo.png'] },
-      {
-        from: 'manifest.json',
-        to: 'manifest.json',
-        transform: (content) => {
-          const jsonContent = JSON.parse(content)
-          jsonContent.version = version
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'icons',
+          to: 'icons',
+          globOptions: { ignore: ['**/logo.png'] }
+        },
+        {
+          from: 'manifest.json',
+          to: 'manifest.json',
+          transform: (content) => {
+            const jsonContent = JSON.parse(content)
+            jsonContent.version = version
 
-          if (process.env.NODE_ENV === 'development') {
-            jsonContent['content_security_policy'] =
-              "script-src 'self' 'unsafe-eval'; object-src 'self'"
+            if (process.env.NODE_ENV === 'development') {
+              jsonContent['content_security_policy'] =
+                "script-src 'self' 'unsafe-eval'; object-src 'self'"
+            }
+
+            return JSON.stringify(jsonContent, null, 2)
           }
-
-          return JSON.stringify(jsonContent, null, 2)
         }
-      }
-    ])
+      ]
+    })
   ]
 }

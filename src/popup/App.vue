@@ -31,7 +31,7 @@
 
           <v-list-item-group v-model="settings" multiple active-class="">
             <v-list-item>
-              <template v-slot:default="{ active }">
+              <template #default="{ active }">
                 <v-list-item-action>
                   <v-checkbox :input-value="active" />
                 </v-list-item-action>
@@ -46,7 +46,7 @@
             </v-list-item>
 
             <v-list-item>
-              <template v-slot:default="{ active }">
+              <template #default="{ active }">
                 <v-list-item-action>
                   <v-checkbox :input-value="active" />
                 </v-list-item-action>
@@ -61,7 +61,7 @@
             </v-list-item>
 
             <v-list-item>
-              <template v-slot:default="{ active }">
+              <template #default="{ active }">
                 <v-list-item-action>
                   <v-checkbox :input-value="active" />
                 </v-list-item-action>
