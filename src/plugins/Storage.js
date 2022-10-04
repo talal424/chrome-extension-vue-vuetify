@@ -1,5 +1,3 @@
-import { assertType } from '@/plugins/Common'
-
 export function getStorage(key, expectedType, defaultValue) {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(key, (data) => {
@@ -11,12 +9,6 @@ export function getStorage(key, expectedType, defaultValue) {
         resolve(defaultValue)
         return
       }
-
-      if (!assertType(data[key], expectedType)) {
-        reject(`item "${key}"'s type is not as expected`)
-        return
-      }
-
       resolve(data[key])
     })
   })

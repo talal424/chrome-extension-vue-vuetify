@@ -1,24 +1,19 @@
 <template>
   <v-app>
     <v-app-bar color="primary" app dense dark>
-      <v-app-bar-nav-icon />
-
-      <v-toolbar-title>Options Page</v-toolbar-title>
+      <v-toolbar-title>Option Page</v-toolbar-title>
       <v-spacer />
 
       <NightMode />
     </v-app-bar>
     <v-main>
-      <v-card class="mx-auto" max-width="400" flat>
+      <v-card class="mx-auto" max-width="720" min-width="360" flat>
         <v-list subheader three-line>
-          <v-subheader>User Controls</v-subheader>
-
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>Content filtering</v-list-item-title>
+              <v-list-item-title>Page Scraper</v-list-item-title>
               <v-list-item-subtitle>
-                Set the content filtering level to restrict appts that can be
-                downloaded
+                Scrape page content and export as excel files.
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -26,56 +21,24 @@
 
         <v-divider />
 
-        <v-list flat subheader three-line>
-          <v-subheader>General</v-subheader>
-
-          <v-list-item-group v-model="settings" multiple active-class="">
-            <v-list-item>
-              <template #default="{ active }">
-                <v-list-item-action>
-                  <v-checkbox :input-value="active" />
-                </v-list-item-action>
-
-                <v-list-item-content>
-                  <v-list-item-title>Notifications</v-list-item-title>
-                  <v-list-item-subtitle>
-                    Notify me about updates to apps or games that I
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </template>
-            </v-list-item>
-
-            <v-list-item>
-              <template #default="{ active }">
-                <v-list-item-action>
-                  <v-checkbox :input-value="active" />
-                </v-list-item-action>
-
-                <v-list-item-content>
-                  <v-list-item-title>Sound</v-list-item-title>
-                  <v-list-item-subtitle>
-                    Auto-update apps at any time. Data charges may
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </template>
-            </v-list-item>
-
-            <v-list-item>
-              <template #default="{ active }">
-                <v-list-item-action>
-                  <v-checkbox :input-value="active" />
-                </v-list-item-action>
-
-                <v-list-item-content>
-                  <v-list-item-title>Auto-add widgets</v-list-item-title>
-                  <v-list-item-subtitle>
-                    Automatically add home screen widgets when downloads
-                    complete
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </template>
-            </v-list-item>
-          </v-list-item-group>
+        <v-list flat subheader :three-line="false">
+          <v-subheader>Content Parser</v-subheader>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title class="d-flex justify-space-between">
+                Scrape
+                <v-btn icon @click="getPageSource()">
+                  <v-icon>{{ $mdi.mdiSpider }}</v-icon>
+                </v-btn>
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                <v-textarea
+                  v-model="pageSource"
+                  style="font-family: monospace"
+                ></v-textarea>
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
       </v-card>
     </v-main>
@@ -84,6 +47,7 @@
 
 <script>
 import NightMode from '#/NightMode'
+const browser = require('webextension-polyfill')
 
 export default {
   components: {
@@ -91,7 +55,30 @@ export default {
   },
   data() {
     return {
-      settings: []
+      settings: [],
+      pageSource: '',
+      activeTab: null
+    }
+  },
+  created() {
+    browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+      this.activeTab = tabs[0] || null
+    })
+  },
+  methods: {
+    async injectScraper() {
+      this.pageSource = JSON.stringify(chrome.tabs.query({}), null, 2)
+    },
+    async messageTab(tabId, msg) {
+      if (tabId) return browser.tabs.sendMessage(tabId, { msg })
+    },
+    async getPageSource() {
+      if (this.activeTab) {
+        const bodyHtml = await this.messageTab(this.activeTab?.id, {
+          action: 'scrape_body'
+        })
+        this.pageSource = bodyHtml
+      }
     }
   }
 }

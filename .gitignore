@@ -3,3 +3,4 @@ dist
 dist-zip
 .vscode
 package-lock.json
+*.log

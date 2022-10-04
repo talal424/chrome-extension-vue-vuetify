@@ -9,10 +9,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   context: __dirname + '/src',
+  devtool: 'cheap-module-source-map',
   entry: {
-    'content/site1': './content/site1.js',
+    'content/main': './content/main.js',
     'background/background': './background/background.js',
-    'popup/popup': './popup/popup.js',
     'options/options': './options/options.js'
   },
   output: {
@@ -121,11 +121,6 @@ module.exports = {
       emitWarning: true,
       emitError: true,
       formatter: undefined
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'popup/popup.html',
-      template: 'popup/popup.html',
-      chunks: ['popup/popup']
     }),
     new HtmlWebpackPlugin({
       filename: 'options/options.html',

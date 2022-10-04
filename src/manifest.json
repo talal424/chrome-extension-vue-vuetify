@@ -1,44 +1,42 @@
 {
-  "name": "chrome-extension-vue-vuetify",
-  "description": "A template for a Chrome extension using Vuejs and Vuetify",
-  "version": null,
-  "manifest_version": 2,
+  "name": "Grand Migrator",
+  "description": "Grand Migrator for Merchandise Conversion",
+  "version": "alpha.0.0.0",
+  "manifest_version": 3,
+  "action": {
+    "default_icon": {              
+      "16": "icons/icon_16.png",
+      "32": "icons/icon_32.png",
+      "48": "icons/icon_48.png",
+      "128": "icons/icon_128.png"
+    },
+    "default_title": "Click Me",   
+    "default_popup": "options/options.html"
+  },
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
     "48": "icons/icon_48.png",
     "128": "icons/icon_128.png"
   },
-  "browser_action": {
-    "default_title": "Popup Title",
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "icons/icon_16.png",
-      "32": "icons/icon_32.png"
-    }
-  },
   "options_ui": {
-    "page": "options/options.html",
-    "chrome_style": false
+    "page": "options/options.html"
   },
   "background": {
-    "scripts": [
-      "background/background.js"
-    ]
+    "service_worker": "background/background.js"
   },
   "permissions": [
-    "storage",
-    "http://localhost/test-content-script/*"
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage"
   ],
   "content_scripts": [
     {
       "matches": [
-        "http://localhost/test-content-script/*"
+        "<all_urls>" 
       ],
-      "js": [
-        "content/site1.js"
-      ],
-      "run_at": "document_end"
+      "js": ["content/main.js"]
     }
   ]
 }
