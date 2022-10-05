@@ -27,7 +27,7 @@
             <v-list-item-content>
               <v-list-item-title class="d-flex justify-space-between">
                 Scrape
-                <v-btn icon @click="getPageSource()">
+                <v-btn icon :loading="loading" @click="getPageSource()">
                   <v-icon>{{ $mdi.mdiSpider }}</v-icon>
                 </v-btn>
               </v-list-item-title>
@@ -58,12 +58,16 @@ export default {
       settings: [],
       pageSource: '',
       activeTab: null,
-      queryTabInterval: null
+      queryTabInterval: null,
+      loading: true
     }
   },
   watch: {
     activeTab(tab) {
-      if (tab) clearInterval(this.queryTabInterval)
+      if (tab && tab?.status === 'complete') {
+        clearInterval(this.queryTabInterval)
+        this.loading = false
+      }
     }
   },
   async mounted() {
@@ -74,7 +78,7 @@ export default {
           this.activeTab = tabs[0] || null
           this.pageSource = JSON.stringify(this.activeTab, null, 2)
         })
-    }, 10)
+    }, 100)
   },
   methods: {
     async messageTab(tabId, msg) {
@@ -82,10 +86,14 @@ export default {
     },
     async getPageSource() {
       if (this.activeTab) {
-        const bodyHtml = await this.messageTab(this.activeTab?.id, {
-          action: 'scrape_body'
-        })
-        this.pageSource = bodyHtml
+        try {
+          const itemList = await this.messageTab(this.activeTab?.id, {
+            action: 'scan_till_end'
+          })
+          this.pageSource = JSON.stringify(itemList, null, 2)
+        } catch {
+          this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
+        }
       }
     }
   }
