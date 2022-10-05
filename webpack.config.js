@@ -13,7 +13,8 @@ module.exports = {
   entry: {
     'content/main': './content/main.js',
     'background/background': './background/background.js',
-    'options/options': './options/options.js'
+    'options/options': './options/options.js',
+    'popup/popup': './popup/popup.js'
   },
   output: {
     path: __dirname + '/dist',
@@ -121,6 +122,11 @@ module.exports = {
       emitWarning: true,
       emitError: true,
       formatter: undefined
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'popup/popup.html',
+      template: 'popup/popup.html',
+      chunks: ['popup/popup']
     }),
     new HtmlWebpackPlugin({
       filename: 'options/options.html',
