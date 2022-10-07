@@ -7,7 +7,7 @@
       <NightMode />
     </v-app-bar>
     <v-main>
-      <v-card class="mx-auto" max-width="720" min-width="360" flat>
+      <v-card class="mx-auto" max-width="840" min-width="600" flat>
         <v-list subheader three-line>
           <v-list-item>
             <v-list-item-content>
@@ -26,10 +26,25 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="d-flex justify-space-between">
-                Scrape
-                <v-btn icon :loading="loading" @click="getPageSource()">
-                  <v-icon>{{ $mdi.mdiSpider }}</v-icon>
-                </v-btn>
+                Scrape Shopee Mall
+                <span>
+                  <v-chip
+                    v-if="!shopeeMallQueryParams"
+                    x-small
+                    class="text-body-2 white--text"
+                    color="red"
+                  >
+                    not a shopee page
+                  </v-chip>
+                  <v-btn
+                    icon
+                    :loading="loading"
+                    :disabled="!shopeeMallQueryParams"
+                    @click="getShopTabXHR()"
+                  >
+                    <v-icon>{{ $mdi.mdiSpider }}</v-icon>
+                  </v-btn>
+                </span>
               </v-list-item-title>
               <v-list-item-subtitle>
                 <v-textarea
@@ -47,6 +62,7 @@
 
 <script>
 import NightMode from '#/NightMode'
+import { CONTENT_ACTIONS, SHOPEE_CONFIG } from '../constants'
 const browser = require('webextension-polyfill')
 
 export default {
@@ -59,7 +75,21 @@ export default {
       pageSource: '',
       activeTab: null,
       queryTabInterval: null,
-      loading: true
+      loading: true,
+      recievedMsg: null,
+      name: 'popup',
+      port: null
+    }
+  },
+  computed: {
+    shopeeMallQueryParams() {
+      if (!this.loading && this.activeTab) {
+        const urlMatch = this.activeTab.url?.match(SHOPEE_CONFIG.MALL_URL_REGEX)
+        if (urlMatch && urlMatch[1]) {
+          return { username: urlMatch[1] }
+        }
+      }
+      return null
     }
   },
   watch: {
@@ -67,6 +97,10 @@ export default {
       if (tab && tab?.status === 'complete') {
         clearInterval(this.queryTabInterval)
         this.loading = false
+        this.port = chrome.tabs.connect(this.activeTab?.id, {
+          name: this.name
+        })
+        this.port.onMessage.addListener(this.onPortMessage)
       }
     }
   },
@@ -81,16 +115,25 @@ export default {
     }, 100)
   },
   methods: {
-    async messageTab(tabId, msg) {
-      if (tabId) return browser.tabs.sendMessage(tabId, { msg })
+    onPortMessage(msg) {
+      this.pageSource = JSON.stringify(msg, null, 2)
+    },
+    async getShopTabXHR() {
+      try {
+        await this.port.postMessage({
+          action: CONTENT_ACTIONS.SHOPEE_GET_SHOP_TAB,
+          params: this.shopeeMallQueryParams
+        })
+      } catch {
+        this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
+      }
     },
     async getPageSource() {
       if (this.activeTab) {
         try {
-          const itemList = await this.messageTab(this.activeTab?.id, {
-            action: 'scan_till_end'
+          await this.port.postMessage({
+            action: CONTENT_ACTIONS.SCAN_TILL_END_GET_BODY
           })
-          this.pageSource = JSON.stringify(itemList, null, 2)
         } catch {
           this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
         }
