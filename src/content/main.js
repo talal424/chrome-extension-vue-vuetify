@@ -12,8 +12,17 @@ browser.runtime.onConnect.addListener(function (port) {
             console.log(`%c ${msg.value}`, 'font-weight: bold; color: #680035;')
             break
           case CONTENT_ACTIONS.SHOPEE_GET_SHOP_TAB:
-            const shopId = await ShopeeUtils.queryUserShop(msg.params)
+            const shopId = await ShopeeUtils.queryUserShop(msg.userName)
             const shopTab = await ShopeeUtils.queryShopTab(shopId)
+            // port.postMessage({ result: 'ok', data: shopTab })
+            for (const customClass of shopTab.customClasses) {
+              for (const merchandise of customClass?.merchandises || []) {
+                merchandise.items = await ShopeeUtils.queryShopItem(
+                  shopId,
+                  merchandise.merchandiseId
+                )
+              }
+            }
             port.postMessage({ result: 'ok', data: shopTab })
             break
           case CONTENT_ACTIONS.SCAN_TILL_END_GET_BODY:

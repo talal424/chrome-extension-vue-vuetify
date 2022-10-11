@@ -29,7 +29,7 @@
                 Scrape Shopee Mall
                 <span>
                   <v-chip
-                    v-if="!shopeeMallQueryParams"
+                    v-if="!shopeeUserName"
                     x-small
                     class="text-body-2 white--text"
                     color="red"
@@ -39,7 +39,7 @@
                   <v-btn
                     icon
                     :loading="loading"
-                    :disabled="!shopeeMallQueryParams"
+                    :disabled="!shopeeUserName"
                     @click="getShopTabXHR()"
                   >
                     <v-icon>{{ $mdi.mdiSpider }}</v-icon>
@@ -62,7 +62,7 @@
 
 <script>
 import NightMode from '#/NightMode'
-import { CONTENT_ACTIONS, SHOPEE_CONFIG } from '../constants'
+import { CONTENT_ACTIONS, SHOPEE_CONF_TW } from '../constants'
 const browser = require('webextension-polyfill')
 
 export default {
@@ -82,11 +82,13 @@ export default {
     }
   },
   computed: {
-    shopeeMallQueryParams() {
+    shopeeUserName() {
       if (!this.loading && this.activeTab) {
-        const urlMatch = this.activeTab.url?.match(SHOPEE_CONFIG.MALL_URL_REGEX)
+        const urlMatch = this.activeTab.url?.match(
+          SHOPEE_CONF_TW.MALL_URL_REGEX
+        )
         if (urlMatch && urlMatch[1]) {
-          return { username: urlMatch[1] }
+          return urlMatch[1]
         }
       }
       return null
@@ -122,7 +124,7 @@ export default {
       try {
         await this.port.postMessage({
           action: CONTENT_ACTIONS.SHOPEE_GET_SHOP_TAB,
-          params: this.shopeeMallQueryParams
+          userName: this.shopeeUserName
         })
       } catch {
         this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
