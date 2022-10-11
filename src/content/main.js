@@ -1,6 +1,6 @@
 const projectTitle = 'Grand Migrator'
 const browser = require('webextension-polyfill')
-import { CONTENT_ACTIONS } from '../constants'
+import { CONTENT_ACTIONS, BACKGROUND_ACTIONS } from '../constants'
 import { ShopeeUtils } from './shopeeUtils'
 
 browser.runtime.onConnect.addListener(function (port) {
@@ -11,19 +11,54 @@ browser.runtime.onConnect.addListener(function (port) {
           case CONTENT_ACTIONS.PRINT_CONSOLE:
             console.log(`%c ${msg.value}`, 'font-weight: bold; color: #680035;')
             break
-          case CONTENT_ACTIONS.SHOPEE_GET_SHOP_TAB:
+          case CONTENT_ACTIONS.SHOPEE_GET_SHOP_MERCHANDISES:
             const shopId = await ShopeeUtils.queryUserShop(msg.userName)
             const shopTab = await ShopeeUtils.queryShopTab(shopId)
-            // port.postMessage({ result: 'ok', data: shopTab })
+            const merchandises = {}
+
+            // scan merchandise
             for (const customClass of shopTab.customClasses) {
               for (const merchandise of customClass?.merchandises || []) {
-                merchandise.items = await ShopeeUtils.queryShopItem(
+                if (merchandises[merchandise.merchandiseId]) continue
+                const itemQuery = await ShopeeUtils.queryShopItem(
                   shopId,
                   merchandise.merchandiseId
                 )
+                merchandise.items = itemQuery.items
+                merchandise.desc = itemQuery.desc
+                merchandise.isFreezeCheck = itemQuery.isFreezeCheck
+                merchandises[merchandise.merchandiseId] = merchandise
               }
             }
-            port.postMessage({ result: 'ok', data: shopTab })
+            for (const merchandise of shopTab.topProducts || []) {
+              if (merchandises[merchandise.merchandiseId]) continue
+              const itemQuery = await ShopeeUtils.queryShopItem(
+                shopId,
+                merchandise.merchandiseId
+              )
+              merchandise.items = itemQuery.items
+              merchandise.desc = itemQuery.desc
+              merchandise.isFreezeCheck = itemQuery.isFreezeCheck
+              merchandises[merchandise.merchandiseId] = merchandise
+            }
+            port.postMessage({
+              result: 'ok',
+              action: msg.action,
+              data: Object.values(merchandises)
+            })
+            break
+          case CONTENT_ACTIONS.EXPORT_MERCHANDISE_EXCEL:
+            if (Array.isArray(msg.merchandises)) {
+              const blob = await ShopeeUtils.exportMerchandises(
+                msg.merchandises
+              )
+              var url = URL.createObjectURL(blob)
+
+              browser.runtime.sendMessage({
+                action: BACKGROUND_ACTIONS.DOWNLOAD_BUFFER,
+                url: url
+              })
+            }
             break
           case CONTENT_ACTIONS.SCAN_TILL_END_GET_BODY:
             // end of page: return found merchandise items
@@ -40,7 +75,8 @@ browser.runtime.onConnect.addListener(function (port) {
                 let arr = Array.prototype.slice.call(items)
                 port.postMessage({
                   result: 'ok',
-                  items: arr.map((elem) => elem.innerHTML)
+                  action: msg.action,
+                  data: arr.map((elem) => elem.innerHTML)
                 })
               } else {
                 // still at middle of a page, continue scan
@@ -49,6 +85,7 @@ browser.runtime.onConnect.addListener(function (port) {
               }
             }
             scannerInterval = setInterval(scan, 150)
+            break
 
           default:
             console.log(`%c ${projectTitle}`, 'color: #680035;')

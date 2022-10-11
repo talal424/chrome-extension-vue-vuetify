@@ -27,9 +27,11 @@
   },
   "permissions": [
     "activeTab",
-    "tabs",
+    "background",
+    "downloads",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "content_scripts": [
     {

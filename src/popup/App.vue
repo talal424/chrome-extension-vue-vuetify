@@ -44,6 +44,15 @@
                   >
                     <v-icon>{{ $mdi.mdiSpider }}</v-icon>
                   </v-btn>
+                  <v-btn
+                    icon
+                    :disabled="
+                      !Array.isArray(merchandises) || !merchandises.length
+                    "
+                    @click="exportMerchandisesToExcel()"
+                  >
+                    <v-icon>{{ $mdi.mdiFileExportOutline }}</v-icon>
+                  </v-btn>
                 </span>
               </v-list-item-title>
               <v-list-item-subtitle>
@@ -78,7 +87,8 @@ export default {
       loading: true,
       recievedMsg: null,
       name: 'popup',
-      port: null
+      port: null,
+      merchandises: []
     }
   },
   computed: {
@@ -118,27 +128,30 @@ export default {
   },
   methods: {
     onPortMessage(msg) {
-      this.pageSource = JSON.stringify(msg, null, 2)
+      switch (msg.action) {
+        case CONTENT_ACTIONS.SHOPEE_GET_SHOP_MERCHANDISES:
+          this.merchandises = msg.data
+          this.pageSource = JSON.stringify(this.merchandises, null, 2)
+      }
     },
     async getShopTabXHR() {
       try {
         await this.port.postMessage({
-          action: CONTENT_ACTIONS.SHOPEE_GET_SHOP_TAB,
+          action: CONTENT_ACTIONS.SHOPEE_GET_SHOP_MERCHANDISES,
           userName: this.shopeeUserName
         })
       } catch {
         this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
       }
     },
-    async getPageSource() {
-      if (this.activeTab) {
-        try {
-          await this.port.postMessage({
-            action: CONTENT_ACTIONS.SCAN_TILL_END_GET_BODY
-          })
-        } catch {
-          this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
-        }
+    async exportMerchandisesToExcel() {
+      try {
+        await this.port.postMessage({
+          action: CONTENT_ACTIONS.EXPORT_MERCHANDISE_EXCEL,
+          merchandises: this.merchandises
+        })
+      } catch {
+        this.pageSource = JSON.stringify(browser.runtime.lastError, null, 2)
       }
     }
   }
